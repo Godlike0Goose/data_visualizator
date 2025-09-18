@@ -1,11 +1,13 @@
 import pandas as pd
 from pathlib import Path
-def read_dataset_from_Path (file_path):
+
+
+def read_dataset_from_Path(file_path):
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Файл не найден: {path.absolute()}")
     suffix = path.suffix.lower()
-    
+
     if suffix == ".csv":
         return pd.read_csv(path)
     elif suffix in [".xls", ".xlsx"]:

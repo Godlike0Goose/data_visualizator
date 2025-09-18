@@ -5,6 +5,7 @@ from PySide6.QtCore import QAbstractTableModel, Qt
 
 from ..crud import read_dataset_from_Path
 
+
 class PandasModel(QAbstractTableModel):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
@@ -29,6 +30,7 @@ class PandasModel(QAbstractTableModel):
             if orientation == Qt.Vertical:
                 return str(self._df.index[section])
         return None
+
 
 class DataSetViewer(QWidget):
     def __init__(self, main_window):

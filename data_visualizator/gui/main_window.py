@@ -5,6 +5,7 @@ from PySide6 import QtCore
 from .explorer import Explorer
 from .tables import DataSetViewer
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -18,7 +19,7 @@ class MainWindow(QWidget):
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(self.splitter)
-    
+
     def open_dataset(self, path):
         self.dataset_viewer.open_dataset(path)
 

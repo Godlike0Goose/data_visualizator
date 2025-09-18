@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 from PySide6 import QtCore
 from PySide6.QtCore import QDir
 
+
 class Explorer(QWidget):
     def __init__(self, main_widow):
         super().__init__()
@@ -20,7 +21,9 @@ class Explorer(QWidget):
 
         self.file_system_model = QFileSystemModel()
         self.file_system_model.setRootPath("")
-        self.file_system_model.setFilter(QDir.Filter.AllDirs | QDir.Filter.Files | QDir.Filter.NoDotAndDotDot)
+        self.file_system_model.setFilter(
+            QDir.Filter.AllDirs | QDir.Filter.Files | QDir.Filter.NoDotAndDotDot
+        )
 
         self.files_tree = QTreeView()
         self.files_tree.setModel(self.file_system_model)
@@ -45,7 +48,7 @@ class Explorer(QWidget):
         path = self.file_system_model.filePath(index)
         if path:
             self.main_window.open_dataset(path)
-    
+
     @QtCore.Slot()
     def open_folder(self):
         choosen_folder = QFileDialog.getExistingDirectory(
@@ -57,6 +60,3 @@ class Explorer(QWidget):
             index = self.file_system_model.index(choosen_folder)
             if index.isValid():
                 self.files_tree.setRootIndex(index)
-
-
-        
