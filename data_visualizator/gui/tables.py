@@ -3,6 +3,7 @@ import pandas as pd
 from PySide6.QtWidgets import QApplication, QTableView, QStackedLayout, QWidget, QLabel
 from PySide6.QtCore import QAbstractTableModel, Qt
 
+from ..crud import read_dataset_from_Path
 
 class PandasModel(QAbstractTableModel):
     def __init__(self, df: pd.DataFrame):
@@ -34,6 +35,7 @@ class DataSetViewer(QWidget):
         super().__init__()
 
         self.main_window = main_window
+        self.data_model = None
 
         self.stack = QStackedLayout(self)
 
@@ -46,27 +48,8 @@ class DataSetViewer(QWidget):
 
         self.setLayout(self.stack)
 
-    def open_CSV(self, ):
-        pass
-
-
-    
-
-if __name__ == "main":
-    app = QApplication(sys.argv)
-
-    # создаём DataFrame для примера
-    df = pd.DataFrame({
-        "Имя": ["Аня", "Борис", "Света"],
-        "Возраст": [25, 30, 22],
-        "Город": ["Москва", "СПб", "Казань"]
-    })
-
-    # таблица
-    view = QTableView()
-    model = PandasModel(df)
-    view.setModel(model)
-    view.resize(500, 300)
-    view.show()
-
-    sys.exit(app.exec())
+    def open_dataset(self, path):
+        df = read_dataset_from_Path(path)
+        self.data_model = PandasModel(df)
+        self.table_view.setModel(self.data_model)
+        self.stack.setCurrentIndex(1)

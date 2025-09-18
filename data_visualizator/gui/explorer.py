@@ -1,10 +1,14 @@
 import os
 from PySide6.QtWidgets import (
     QWidget,
+    QLabel,
     QFileSystemModel,
     QTreeView,
     QVBoxLayout,
+    QPushButton,
+    QFileDialog,
 )
+from PySide6 import QtCore
 from PySide6.QtCore import QDir
 
 class Explorer(QWidget):
@@ -25,5 +29,34 @@ class Explorer(QWidget):
         self.files_tree.hideColumn(2)
         self.files_tree.hideColumn(3)
 
+        self.opened_folder_name = QLabel(self.datasets_dir)
+        self.choosing_folder_button = QPushButton("choose a dir")
+
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(self.files_tree)
+        self.layout.addWidget(self.opened_folder_name)
+        self.layout.addWidget(self.choosing_folder_button)
+
+        self.files_tree.doubleClicked.connect(self.open_table)
+        self.choosing_folder_button.clicked.connect(self.open_folder)
+
+    @QtCore.Slot()
+    def open_table(self, index):
+        path = self.file_system_model.filePath(index)
+        if path:
+            self.main_window.open_dataset(path)
+    
+    @QtCore.Slot()
+    def open_folder(self):
+        choosen_folder = QFileDialog.getExistingDirectory(
+            self,
+            caption="выбор папки",
+            dir=os.path.expanduser("~"),
+        )
+        if choosen_folder:
+            index = self.file_system_model.index(choosen_folder)
+            if index.isValid():
+                self.files_tree.setRootIndex(index)
+
+
+        
