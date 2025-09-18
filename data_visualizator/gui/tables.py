@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from PySide6.QtWidgets import QApplication, QTableView, QStackedLayout, QWidget
+from PySide6.QtWidgets import QApplication, QTableView, QStackedLayout, QWidget, QLabel
 from PySide6.QtCore import QAbstractTableModel, Qt
 
 
@@ -30,16 +30,24 @@ class PandasModel(QAbstractTableModel):
         return None
 
 class DataSetViewer(QWidget):
-    def __init__(self, df: pd.DataFrame):
+    def __init__(self, main_window):
         super().__init__()
 
-        self.data_model = PandasModel(df)
-        
+        self.main_window = main_window
+
         self.stack = QStackedLayout(self)
 
-        self.setModel(self.data_model)
+        self.label = QLabel("No CSV opened", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.table_view = QTableView(self)
 
-        
+        self.stack.addWidget(self.label)
+        self.stack.addWidget(self.table_view)
+        self.stack.setCurrentIndex(0)
+
+        self.setLayout(self.stack)
+
+    def open_CSV(self, ):
+        pass
 
 
     
