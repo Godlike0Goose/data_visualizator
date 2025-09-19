@@ -22,7 +22,7 @@ class ViewMenu(QMenu):  # pylint: disable=too-few-public-methods
         Args:
             main_window: Ссылка на главный объект окна приложения.
         """
-        super().__init__("Вид", main_window)
+        super().__init__("View", main_window)
         self.main_window = main_window
 
         self.toggle_explorer_action = QAction("Проводник", self, checkable=True)

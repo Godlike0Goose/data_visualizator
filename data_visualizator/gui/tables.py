@@ -11,7 +11,9 @@ from PySide6.QtGui import QColor
 import pandas as pd
 
 from ._base import BaseWidget
-from ..crud import read_dataset_from_Path
+from ..core.utils import read_dataset_from_path
+from ..core.data_operations import validate_and_update_cell, get_features
+
 
 logger = logging.getLogger(__name__)
 
@@ -74,9 +76,38 @@ class PandasModel(QAbstractTableModel):
 
         return None
 
+    def setData(self, index, value, role=Qt.EditRole):  # pylint: disable=invalid-name
+        """Устанавливает данные для указанного индекса.
+
+        Вызывается при редактировании ячейки в представлении.
+
+        Args:
+            index (QModelIndex): Индекс ячейки.
+            value: Новое значение.
+            role (int): Роль данных (должна быть Qt.EditRole).
+
+        Returns:
+            bool: True, если данные были успешно установлены, иначе False.
+        """
+        if role == Qt.EditRole:
+            row, col = index.row(), index.column()
+            success = validate_and_update_cell(self._df, row, col, value)
+
+            if success:
+                self.dataChanged.emit(index, index, [Qt.DisplayRole])
+                logger.debug("Set data at (%d, %d) to %s", row, col, value)
+                return True
+
+            return False
+
+        return False
+    def flags(self, index):
+        """Возвращает флаги для элемента, включая возможность редактирования."""
+        return super().flags(index) | Qt.ItemIsEditable
+
     def headerData(
         self, section, orientation, role=Qt.DisplayRole
-    ):  # pylint: disable=invalid-name
+    ):
         """Возвращает данные для заголовков строк или столбцов.
 
         Args:
@@ -190,8 +221,6 @@ class DataSetViewer(BaseWidget):
         self.stack.setCurrentIndex(0)
         self.content_widget.setLayout(self.stack)
 
-        self.table_view.doubleClicked.connect(self._on_table_view_double_clicked)
-
     def open_dataset(self, path):
         """Загружает и отображает набор данных из файла.
 
@@ -199,7 +228,7 @@ class DataSetViewer(BaseWidget):
             path (str): Путь к файлу с набором данных.
         """
         logger.debug("Opening dataset from path: %s", path)
-        df = read_dataset_from_Path(path)
+        df = read_dataset_from_path(path)
         self.data_model = PandasModel(df)
         self.table_view.setModel(self.data_model)
         self.stack.setCurrentIndex(1)
@@ -254,30 +283,11 @@ class DataSetViewer(BaseWidget):
         if self.target_var is None:
             logger.debug("No target variable set, returning empty list of features.")
             return []
-
-        features = [
-            feature
-            for feature in self.get_all_column_names()
-            if feature != self.target_var
-        ]
+        df = self.data_model.get_df()
+        features = get_features(df, self.target_var)
         logger.debug(
             "Returning features (all columns except target '%s'): %s",
             self.target_var,
             features,
         )
         return features
-
-    @Slot()
-    def _on_table_view_double_clicked(self, index):
-        """Обрабатывает двойной щелчок по ячейке таблицы.
-
-        В текущей реализации окрашивает столбец, по которому кликнули, в красный цвет.
-        (Возможно, это поведение для отладки).
-
-        Args:
-            index (QModelIndex): Индекс ячейки, по которой был сделан двойной щелчок.
-        """
-        logger.debug(
-            "Double-clicked on table. Setting color for column index %d", index.column()
-        )
-        self.data_model.set_column_color(index.column(), "red")
