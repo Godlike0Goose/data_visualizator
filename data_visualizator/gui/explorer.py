@@ -5,9 +5,7 @@
 """
 
 import os
-import logging
 from PySide6.QtWidgets import (
-    QWidget,
     QVBoxLayout,
     QTreeView,
     QFileDialog,
@@ -15,11 +13,13 @@ from PySide6.QtWidgets import (
     QFileSystemModel,
 )
 from PySide6.QtCore import QDir, Slot
+from ._base import BaseWidget
 
+import logging
 logger = logging.getLogger(__name__)
 
 
-class Explorer(QWidget):
+class Explorer(BaseWidget):
     """Виджет для просмотра файловой системы и открытия наборов данных.
 
     Отображает древовидную структуру каталога с наборами данных и позволяет
@@ -39,7 +39,7 @@ class Explorer(QWidget):
         Args:
             main_window: Ссылка на главный объект окна приложения.
         """
-        super().__init__()
+        super().__init__("Explorer")
         logger.debug("Initializing Explorer")
 
         self.main_window = main_window
@@ -61,9 +61,9 @@ class Explorer(QWidget):
 
         self.opened_folder_name = QLabel(self.datasets_dir)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.opened_folder_name)
-        self.layout.addWidget(self.files_tree)
+        layout = QVBoxLayout(self.content_widget)
+        layout.addWidget(self.opened_folder_name)
+        layout.addWidget(self.files_tree)
 
         self.files_tree.doubleClicked.connect(self.open_table)
         logger.debug("Explorer initialized")

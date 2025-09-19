@@ -18,11 +18,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
 )
 from PySide6.QtCore import Qt, Signal, QObject
+from ._base import BaseWidget
 
 logger = logging.getLogger(__name__)
 
 
-class ModelConfigGroup(QWidget):
+class ModelConfigGroup(BaseWidget):
     """Группа виджетов для настройки параметров модели машинного обучения.
 
     Этот виджет содержит элементы управления для выбора модели, целевой переменной
@@ -42,11 +43,10 @@ class ModelConfigGroup(QWidget):
         Args:
             main_window: Ссылка на главный объект окна приложения.
         """
-        super().__init__()
+        super().__init__("Model Configuration")
         logger.debug("Initializing ModelConfigGroup")
 
         self.main_window = main_window
-        self.stack = QStackedLayout(self)
 
         self.placeholder_label = QLabel(
             "No CSV opened", alignment=Qt.AlignmentFlag.AlignCenter
@@ -66,11 +66,11 @@ class ModelConfigGroup(QWidget):
 
         self.group_box.setLayout(v_layout)
 
+        self.stack = QStackedLayout()
         self.stack.addWidget(self.placeholder_label)
         self.stack.addWidget(self.group_box)
         self.stack.setCurrentIndex(0)
-
-        self.setLayout(self.stack)
+        self.content_widget.setLayout(self.stack)
 
     def show_widgets(self):
         """Отображает виджеты конфигурации и скрывает плейсхолдер.

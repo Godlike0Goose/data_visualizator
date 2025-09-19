@@ -5,3 +5,4 @@
 """
 
 from .main_window import start
+from ._base import BaseWidget

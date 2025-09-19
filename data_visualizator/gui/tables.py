@@ -5,11 +5,12 @@
 """
 
 import logging
-import pandas as pd
-from PySide6.QtWidgets import QTableView, QStackedLayout, QWidget, QLabel
+from PySide6.QtWidgets import QTableView, QStackedLayout, QLabel
 from PySide6.QtCore import QAbstractTableModel, Qt, Slot
 from PySide6.QtGui import QColor
+import pandas as pd
 
+from ._base import BaseWidget
 from ..crud import read_dataset_from_Path
 
 logger = logging.getLogger(__name__)
@@ -150,7 +151,7 @@ class PandasModel(QAbstractTableModel):
             self.dataChanged.emit(top_left, bottom_right, [Qt.BackgroundRole])
 
 
-class DataSetViewer(QWidget):
+class DataSetViewer(BaseWidget):
     """Виджет для отображения набора данных в виде таблицы.
 
     Использует QStackedLayout для переключения между плейсхолдером
@@ -170,7 +171,7 @@ class DataSetViewer(QWidget):
         Args:
             main_window: Ссылка на главный объект окна приложения.
         """
-        super().__init__()
+        super().__init__("Dataset Viewer")
         logger.debug("Initializing DataSetViewer")
 
         self.target_var = None
@@ -178,18 +179,16 @@ class DataSetViewer(QWidget):
         self.main_window = main_window
         self.data_model = None
 
-        self.stack = QStackedLayout(self)
-
         self.placeholder_label = QLabel(
             "No CSV opened", alignment=Qt.AlignmentFlag.AlignCenter
         )
         self.table_view = QTableView(self)
 
+        self.stack = QStackedLayout()
         self.stack.addWidget(self.placeholder_label)
         self.stack.addWidget(self.table_view)
         self.stack.setCurrentIndex(0)
-
-        self.setLayout(self.stack)
+        self.content_widget.setLayout(self.stack)
 
         self.table_view.doubleClicked.connect(self._on_table_view_double_clicked)
 

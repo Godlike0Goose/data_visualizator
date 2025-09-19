@@ -5,7 +5,7 @@
 """
 
 import sys
-from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QSplitter, QWidget
+from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QWidget
 
 from .explorer import Explorer
 from .tables import DataSetViewer
@@ -13,6 +13,7 @@ from .model_configurator import ModelConfigGroup
 from .menu_bar import FileMenu, ViewMenu
 
 from ..logging_setup import setup_logger
+from .reorderable_splitter import ReorderableSplitter
 
 logger = setup_logger()
 
@@ -46,7 +47,7 @@ class MainWindow(QMainWindow):
         self.dataset_viewer = DataSetViewer(self)
         self.model_config = ModelConfigGroup(self)
 
-        self.splitter = QSplitter()
+        self.splitter = ReorderableSplitter()
         self.splitter.addWidget(self.explorer)
         self.splitter.addWidget(self.dataset_viewer)
         self.splitter.addWidget(self.model_config)
