@@ -125,17 +125,13 @@ class MainWindow(QMainWindow):
 
         def on_filter_selected(file_filter):
             """Обновляет суффикс по умолчанию при смене фильтра."""
-            # Ищем первое расширение в строке фильтра, например, *.csv
             match = re.search(r"\*\.([a-zA-Z0-9_]+)", file_filter)
             if match:
                 suffix = match.group(1)
                 save_file_dialog.setDefaultSuffix(suffix)
                 logger.debug("Default suffix changed to: %s", suffix)
 
-        # Соединяем сигнал смены фильтра с нашей функцией
         save_file_dialog.filterSelected.connect(on_filter_selected)
-
-
 
         if save_file_dialog.exec():
             file_path = save_file_dialog.selectedFiles()[0]

@@ -101,13 +101,12 @@ class PandasModel(QAbstractTableModel):
             return False
 
         return False
+
     def flags(self, index):
         """Возвращает флаги для элемента, включая возможность редактирования."""
         return super().flags(index) | Qt.ItemIsEditable
 
-    def headerData(
-        self, section, orientation, role=Qt.DisplayRole
-    ):
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
         """Возвращает данные для заголовков строк или столбцов.
 
         Args:

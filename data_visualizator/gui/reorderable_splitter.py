@@ -52,8 +52,10 @@ class ReorderableSplitter(QSplitter):
             logger.debug(f"Drag started on widget: {self._drag_widget}")
             return True  # Захватываем событие
 
-        if (event.type() == QEvent.Type.MouseMove and
-                event.buttons() == Qt.MouseButton.LeftButton):
+        if (
+            event.type() == QEvent.Type.MouseMove
+            and event.buttons() == Qt.MouseButton.LeftButton
+        ):
             if self._drag_widget:
                 drag = QDrag(self)
                 mime_data = QMimeData()

@@ -16,6 +16,7 @@ from PySide6.QtCore import QDir, Slot
 from ._base import BaseWidget
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
