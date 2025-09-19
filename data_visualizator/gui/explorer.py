@@ -104,6 +104,9 @@ class Explorer(BaseWidget):
             if index.isValid():
                 logger.debug("Setting new root index for QTreeView: %s", index)
                 self.files_tree.setRootIndex(index)
+                self.main_window.statusBar().showMessage(
+                    f"Открыта папка: {choosen_folder}", 3000
+                )
             else:
                 logger.debug(
                     "Chosen folder '%s' resulted in an invalid index.", choosen_folder

@@ -101,6 +101,9 @@ class ModelSelectWidget(QWidget):
         self.main_window = main_window
         self.model_select_label = QLabel("Select a ML model:")
         self.model_select_drop_menu = QComboBox()
+        self.model_select_drop_menu.setToolTip(
+            "Выберите модель машинного обучения для конфигурации"
+        )
 
         h_layout = QHBoxLayout(self)
         h_layout.addWidget(self.model_select_label)
@@ -167,8 +170,15 @@ class TargetSelectWidget(QWidget):
         Args:
             target (str): Новое имя целевой переменной.
         """
-        logger.debug("TargetSelectWidget: target variable changed to '%s'", target)
-        self.main_window.change_target_var(target)
+        if target:  # Избегаем вызова при очистке комбобокса
+            logger.debug("TargetSelectWidget: target variable changed to '%s'", target)
+            message = (
+                f"Целевая переменная изменена на: {target}"
+                if target != "no target"
+                else "Целевая переменная сброшена"
+            )
+            self.main_window.statusBar().showMessage(message, 3000)
+            self.main_window.change_target_var(target)
 
 
 class FeatureSelectWidget(QWidget):

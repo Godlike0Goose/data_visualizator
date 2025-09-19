@@ -25,8 +25,11 @@ class FileMenu(QMenu):  # pylint: disable=too-few-public-methods
         self.main_window = main_window
 
         self.open_dataset_action = QAction("Open Dataset", self)
+        self.open_dataset_action.setStatusTip("Открыть файл с набором данных")
         self.open_folder_action = QAction("Open Folder", self)
+        self.open_folder_action.setStatusTip("Открыть папку в проводнике")
         self.export_dataset_action = QAction("Export Dataset", self)
+        self.export_dataset_action.setStatusTip("Экспортировать текущий набор данных в файл")
         self.export_dataset_action.setEnabled(False)  # Изначально неактивно
 
         self.open_folder_action.triggered.connect(

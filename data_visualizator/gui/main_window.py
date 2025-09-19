@@ -6,7 +6,7 @@
 
 import sys
 import re
-from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QWidget
+from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QWidget, QStatusBar
 
 from .explorer import Explorer
 from .tables import DataSetViewer
@@ -40,6 +40,8 @@ class MainWindow(QMainWindow):
 
         self.init_central_widget()
         self.init_menu_bar()
+        self.setStatusBar(QStatusBar(self))
+        self.statusBar().showMessage("Приложение готово")
 
     def init_central_widget(self):
         """Инициализирует и размещает центральный виджет и его компоненты."""
@@ -99,6 +101,11 @@ class MainWindow(QMainWindow):
         """
         self.dataset_viewer.open_dataset(path)
         self.model_config.show_widgets()
+        if self.dataset_viewer.data_model:
+            df = self.dataset_viewer.data_model.get_df()
+            self.statusBar().showMessage(
+                f"Загружен файл: {path} ({df.shape[0]} строк, {df.shape[1]} столбцов)", 5000
+            )
         self.file_menu.export_dataset_action.setEnabled(True)
 
     def export_dataset(self):
@@ -137,6 +144,7 @@ class MainWindow(QMainWindow):
             file_path = save_file_dialog.selectedFiles()[0]
             df = self.dataset_viewer.data_model.get_df()
             save_dataframe_to_path(df, file_path, index=False)
+            self.statusBar().showMessage(f"Данные экспортированы в {file_path}", 5000)
             logger.info("Dataset exported to %s", file_path)
 
     def get_all_column_names(self):
@@ -155,6 +163,13 @@ class MainWindow(QMainWindow):
         Args:
             target (str): Имя нового целевого столбца.
         """
+        # Обновляем комбобокс в конфигураторе модели
+        combobox = self.model_config.target_select_widget.target_select_combobox
+        # Временно блокируем сигналы, чтобы избежать рекурсивного вызова
+        combobox.blockSignals(True)
+        combobox.setCurrentText(target)
+        combobox.blockSignals(False)
+
         self.dataset_viewer.change_target_var_color(target)
         self.model_config.feature_select_widget.update_feature_list()
 
@@ -177,16 +192,22 @@ class MainWindow(QMainWindow):
     def toggle_explorer(self, checked):
         """Переключает видимость виджета проводника."""
         logger.debug("Toggling explorer visibility to %s", checked)
+        message = "Панель проводника показана" if checked else "Панель проводника скрыта"
+        self.statusBar().showMessage(message, 2000)
         self.explorer.setVisible(checked)
 
     def toggle_dataset_viewer(self, checked):
         """Переключает видимость виджета для просмотра данных."""
         logger.debug("Toggling dataset viewer visibility to %s", checked)
+        message = "Панель данных показана" if checked else "Панель данных скрыта"
+        self.statusBar().showMessage(message, 2000)
         self.dataset_viewer.setVisible(checked)
 
     def toggle_model_config(self, checked):
         """Переключает видимость виджета конфигуратора модели."""
         logger.debug("Toggling model configurator visibility to %s", checked)
+        message = "Панель конфигурации показана" if checked else "Панель конфигурации скрыта"
+        self.statusBar().showMessage(message, 2000)
         self.model_config.setVisible(checked)
 
 

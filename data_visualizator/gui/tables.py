@@ -5,7 +5,7 @@
 """
 
 import logging
-from PySide6.QtWidgets import QTableView, QStackedLayout, QLabel
+from PySide6.QtWidgets import QTableView, QStackedLayout, QLabel, QMenu
 from PySide6.QtCore import QAbstractTableModel, Qt, Slot
 from PySide6.QtGui import QColor
 import pandas as pd
@@ -214,6 +214,12 @@ class DataSetViewer(BaseWidget):
         )
         self.table_view = QTableView(self)
 
+        # Включаем политику кастомного контекстного меню для заголовка
+        header = self.table_view.horizontalHeader()
+        header.setContextMenuPolicy(Qt.CustomContextMenu)
+        # Подключаем сигнал к нашему слоту
+        header.customContextMenuRequested.connect(self.on_header_context_menu)
+
         self.stack = QStackedLayout()
         self.stack.addWidget(self.placeholder_label)
         self.stack.addWidget(self.table_view)
@@ -290,3 +296,30 @@ class DataSetViewer(BaseWidget):
             features,
         )
         return features
+
+    @Slot()
+    def on_header_context_menu(self, pos):
+        """
+        Создает и отображает контекстное меню при правом клике на заголовок столбца.
+        """
+        if self.data_model is None:
+            return
+
+        header = self.table_view.horizontalHeader()
+        # Получаем логический индекс столбца, по которому кликнули
+        column_index = header.logicalIndexAt(pos)
+        # Получаем имя столбца из модели
+        column_name = self.data_model.headerData(column_index, Qt.Horizontal)
+
+        if column_name:
+            menu = QMenu(self)
+            set_as_target_action = menu.addAction("Set as Target")
+
+            # Соединяем действие с методом главного окна, передавая имя столбца
+            set_as_target_action.triggered.connect(
+                lambda: self.main_window.change_target_var(column_name)
+            )
+
+            # Отображаем меню в позиции курсора
+            menu.exec(header.mapToGlobal(pos))
+            logger.debug(f"Context menu shown for column '{column_name}'")

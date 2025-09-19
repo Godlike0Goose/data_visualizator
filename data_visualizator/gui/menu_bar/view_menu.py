@@ -27,16 +27,23 @@ class ViewMenu(QMenu):  # pylint: disable=too-few-public-methods
 
         self.toggle_explorer_action = QAction("Проводник", self, checkable=True)
         self.toggle_explorer_action.setChecked(True)
+        self.toggle_explorer_action.setStatusTip("Показать/скрыть панель проводника")
         self.toggle_explorer_action.triggered.connect(self.main_window.toggle_explorer)
 
         self.toggle_viewer_action = QAction("Просмотр данных", self, checkable=True)
         self.toggle_viewer_action.setChecked(True)
+        self.toggle_viewer_action.setStatusTip(
+            "Показать/скрыть панель просмотра набора данных"
+        )
         self.toggle_viewer_action.triggered.connect(
             self.main_window.toggle_dataset_viewer
         )
 
         self.toggle_config_action = QAction("Конфигуратор модели", self, checkable=True)
         self.toggle_config_action.setChecked(True)
+        self.toggle_config_action.setStatusTip(
+            "Показать/скрыть панель конфигурации модели"
+        )
         self.toggle_config_action.triggered.connect(
             self.main_window.toggle_model_config
         )
