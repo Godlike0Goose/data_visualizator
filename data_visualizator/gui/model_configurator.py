@@ -17,7 +17,24 @@ logger = logging.getLogger(__name__)
 
 
 class ModelConfigGroup(QWidget):
+    """Группа виджетов для настройки параметров модели машинного обучения.
+
+    Этот виджет содержит элементы управления для выбора модели, целевой переменной
+    и признаков. Он скрыт до тех пор, пока не будет открыт набор данных.
+
+    Attributes:
+        main_window: Ссылка на главный объект окна приложения.
+        stack (QStackedLayout): Layout для переключения между плейсхолдером и виджетами.
+        model_select_widget (ModelSelectWidget): Виджет для выбора ML модели.
+        target_select_widget (TargetSelectWidget): Виджет для выбора целевой переменной.
+        feature_select_widget (FeatureSelectWidget): Виджет для выбора признаков.
+    """
     def __init__(self, main_window):
+        """Инициализирует ModelConfigGroup.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing ModelConfigGroup")
 
@@ -49,6 +66,11 @@ class ModelConfigGroup(QWidget):
         self.setLayout(self.stack)
 
     def show_widgets(self):
+        """Отображает виджеты конфигурации и скрывает плейсхолдер.
+
+        Вызывается после загрузки набора данных. Обновляет дочерние виджеты
+        и переключает QStackedLayout для их отображения.
+        """
         logger.debug("ModelConfigGroup: showing widgets")
         self.model_select_widget.show_widget()
         self.target_select_widget.show_widget()
@@ -58,13 +80,25 @@ class ModelConfigGroup(QWidget):
 
 
 class ModelSelectWidget(QWidget):
+    """Виджет для выбора модели машинного обучения."""
     def __init__(self, main_window):
+        """Инициализирует ModelSelectWidget.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing ModelSelectWidget")
 
         self.main_window = main_window
 
     def show_widget(self):
+        """Создает и отображает элементы управления для выбора модели.
+
+        Этот метод вызывается, когда нужно показать виджет (после загрузки данных),
+        а не в `__init__`, чтобы избежать создания виджетов, которые могут
+        никогда не понадобиться.
+        """
         logger.debug("ModelSelectWidget: showing widget")
         self.model_select_label = QLabel("Select a ML model:")
         self.model_select_drop_menu = QComboBox()
@@ -79,14 +113,25 @@ class ModelSelectWidget(QWidget):
 
 
 class TargetSelectWidget(QWidget):
+    """Виджет для выбора целевой переменной из столбцов набора данных."""
     target_changed = Signal()
 
     def __init__(self, main_window):
+        """Инициализирует TargetSelectWidget.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing TargetSelectWidget")
         self.main_window = main_window
 
     def show_widget(self):
+        """Создает и отображает элементы управления для выбора целевой переменной.
+
+        Заполняет выпадающий список именами столбцов из загруженного
+        набора данных.
+        """
         logger.debug("TargetSelectWidget: showing widget")
         self.target_select_label = QLabel("Select target var:")
         self.target_select_combobox = QComboBox()
@@ -107,18 +152,30 @@ class TargetSelectWidget(QWidget):
         logger.debug("TargetSelectWidget: widget shown")
 
     def _on_target_var_changed(self, target):
+        """Обрабатывает изменение выбора целевой переменной.
+
+        Args:
+            target (str): Новое имя целевой переменной.
+        """
         logger.debug(f"TargetSelectWidget: target variable changed to '{target}'")
         self.main_window.change_target_var(target)
 
 
 class FeatureSelectWidget(QWidget):
+    """Виджет для выбора признаков для модели."""
     def __init__(self, main_window):
+        """Инициализирует FeatureSelectWidget.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing FeatureSelectWidget")
 
         self.main_window = main_window
 
     def show_widget(self):
+        """Создает и отображает элементы управления для выбора признаков."""
         logger.debug("FeatureSelectWidget: showing widget")
         self.feature_select_label = QLabel("Select feature vars:")
         self.feature_checkboxes = FeatureCheckBoxes(self.main_window)
@@ -131,6 +188,7 @@ class FeatureSelectWidget(QWidget):
         logger.debug("FeatureSelectWidget: widget shown")
 
     def update_feature_list(self):
+        """Обновляет список доступных признаков в дочернем виджете."""
         logger.debug("FeatureSelectWidget: updating features")
         self.feature_checkboxes.update_menu()
         logger.debug("FeatureSelectWidget: features updated")
@@ -142,6 +200,14 @@ class NonClosingMenu(QMenu):
     action_toggled = Signal()
 
     def mouseReleaseEvent(self, event):
+        """Переопределяет событие отпускания кнопки мыши.
+
+        Предотвращает закрытие меню при клике на флажок, позволяя
+        выбрать несколько элементов.
+
+        Args:
+            event (QMouseEvent): Событие мыши.
+        """
         action = self.activeAction()
         if action and action.isEnabled() and action.isCheckable():
             action.setChecked(not action.isChecked())
@@ -154,7 +220,23 @@ class NonClosingMenu(QMenu):
 
 
 class FeatureCheckBoxes(QWidget):
+    """Виджет с кнопкой, открывающей выпадающее меню с флажками для выбора признаков.
+
+    Также содержит флажок "Select All" для быстрого выбора/снятия выбора
+    всех признаков.
+
+    Attributes:
+        main_window: Ссылка на главный объект окна приложения.
+        select_button (QPushButton): Кнопка, отображающая меню выбора признаков.
+        feature_menu (NonClosingMenu): Выпадающее меню с флажками.
+        select_all_checkbox (QCheckBox): Флажок для выбора всех признаков.
+    """
     def __init__(self, main_window):
+        """Инициализирует FeatureCheckBoxes.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing FeatureCheckBoxes")
 
@@ -178,6 +260,12 @@ class FeatureCheckBoxes(QWidget):
         self.feature_menu.action_toggled.connect(self._update_select_all_checkbox_state)
 
     def update_menu(self):
+        """Обновляет содержимое выпадающего меню с признаками.
+
+        Очищает старые элементы и добавляет новые на основе доступных признаков
+        из `main_window`. Сохраняет состояние флажков для уже выбранных
+        признаков.
+        """
         logger.debug("FeatureCheckBoxes: updating menu")
         checked_features = {
             action.text()
@@ -206,6 +294,13 @@ class FeatureCheckBoxes(QWidget):
         self._update_select_all_checkbox_state()
 
     def _toggle_all_features(self, state):
+        """Обрабатывает изменение состояния флажка "Select All".
+
+        Устанавливает или снимает флажки для всех признаков в меню.
+
+        Args:
+            state (int): Новое состояние флажка (Qt.CheckState).
+        """
         is_checked = state == Qt.CheckState.Checked.value
         logger.debug(f"FeatureCheckBoxes: toggling all features to {is_checked}")
 
@@ -219,6 +314,11 @@ class FeatureCheckBoxes(QWidget):
         logger.debug("FeatureCheckBoxes: all features toggled")
 
     def _update_select_all_checkbox_state(self):
+        """Обновляет состояние флажка "Select All" в зависимости от состояния флажков в меню.
+
+        Если все флажки в меню установлены, устанавливает "Select All".
+        В противном случае снимает его.
+        """
         logger.debug("FeatureCheckBoxes: updating 'select all' checkbox state")
         actions = self.feature_menu.actions()
         if not actions:

@@ -3,6 +3,21 @@ from pathlib import Path
 
 
 def read_dataset_from_Path(file_path):
+    """Читает набор данных из файла по указанному пути.
+
+    Поддерживает различные форматы файлов, включая CSV, Excel, JSON, Parquet,
+    Feather, HDF5 и Pickle.
+
+    Args:
+        file_path (str или Path): Путь к файлу с набором данных.
+
+    Returns:
+        pd.DataFrame: Загруженный набор данных в виде DataFrame.
+
+    Raises:
+        FileNotFoundError: Если файл по указанному пути не найден.
+        ValueError: Если формат файла не поддерживается.
+    """
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Файл не найден: {path.absolute()}")

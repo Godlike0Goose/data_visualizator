@@ -13,13 +13,26 @@ logger = setup_logger()
 
 
 class MainWindow(QMainWindow):
+    """Главное окно приложения для визуализации данных.
+
+    Собирает все основные виджеты: проводник, просмотрщик наборов данных
+    и конфигуратор модели. Управляет их взаимодействием.
+
+    Attributes:
+        explorer (Explorer): Виджет проводника файлов.
+        dataset_viewer (DataSetViewer): Виджет для отображения таблиц данных.
+        model_config (ModelConfigGroup): Виджет для настройки моделей ML.
+        splitter (QSplitter): Разделитель для управления размерами виджетов.
+    """
     def __init__(self):
+        """Инициализирует главное окно."""
         super().__init__()
 
         self.init_central_widget()
         self.init_menu_bar()
 
     def init_central_widget(self):
+        """Инициализирует и размещает центральный виджет и его компоненты."""
         logger.info("Starting application")
 
         self.setWindowTitle("Data Visualizator")
@@ -36,6 +49,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.splitter)
 
     def init_menu_bar(self):
+        """Инициализирует меню приложения."""
         menu_bar = self.menuBar()
         menu_bar.setNativeMenuBar(False)
 
@@ -43,6 +57,7 @@ class MainWindow(QMainWindow):
         menu_bar.addMenu(file_menu)
 
     def open_dataset(self):
+        """Открывает диалоговое окно для выбора и загрузки файла с набором данных."""
         open_file_dialog = QFileDialog(self)
         open_file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         open_file_dialog.setNameFilter("CSV files (*.csv)")
@@ -53,24 +68,52 @@ class MainWindow(QMainWindow):
             self.open_dataset_from_path(file_path)
 
     def open_dataset_from_path(self, path):
+        """Открывает набор данных по указанному пути.
+
+        Args:
+            path (str): Путь к файлу с набором данных.
+        """
         self.dataset_viewer.open_dataset(path)
         self.model_config.show_widgets()
 
     def get_all_column_names(self):
+        """Возвращает список имен всех столбцов из текущего набора данных.
+
+        Returns:
+            list[str]: Список имен столбцов.
+        """
         return self.dataset_viewer.get_all_column_names()
 
     def change_target_var(self, target):
+        """Изменяет целевую переменную в приложении.
+
+        Обновляет цвет столбца в таблице и список доступных признаков.
+
+        Args:
+            target (str): Имя нового целевого столбца.
+        """
         self.dataset_viewer.change_target_var_color(target)
         self.model_config.feature_select_widget.update_feature_list()
 
     def get_features(self):
+        """Возвращает список имен признаков (все столбцы, кроме целевого).
+
+        Returns:
+            list[str]: Список имен признаков.
+        """
         return self.dataset_viewer.get_features()
 
     def open_folder_in_explorer(self):
+        """Открывает диалог выбора папки в виджете проводника."""
         self.explorer.open_folder()
 
 
 def start():
+    """Запускает приложение Qt.
+
+    Создает экземпляр QApplication, инициализирует и отображает
+    главное окно, а затем запускает цикл обработки событий.
+    """
     app = QApplication([])
 
     main_window = MainWindow()

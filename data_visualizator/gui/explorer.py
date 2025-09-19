@@ -16,7 +16,24 @@ logger = logging.getLogger(__name__)
 
 
 class Explorer(QWidget):
+    """Виджет для просмотра файловой системы и открытия наборов данных.
+
+    Отображает древовидную структуру каталога с наборами данных и позволяет
+    пользователям открывать файлы двойным щелчком мыши.
+
+    Attributes:
+        main_window: Ссылка на главный объект окна приложения.
+        datasets_dir (str): Путь к каталогу с наборами данных по умолчанию.
+        file_system_model (QFileSystemModel): Модель данных файловой системы.
+        files_tree (QTreeView): Древовидное представление для отображения файлов.
+        opened_folder_name (QLabel): Метка для отображения имени открытой папки.
+    """
     def __init__(self, main_window):
+        """Инициализирует виджет Explorer.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing Explorer")
 
@@ -48,6 +65,13 @@ class Explorer(QWidget):
 
     @QtCore.Slot()
     def open_table(self, index):
+        """Открывает набор данных, соответствующий выбранному элементу в дереве.
+
+        Слот для обработки сигнала `doubleClicked` от `files_tree`.
+
+        Args:
+            index (QModelIndex): Индекс элемента, по которому был сделан двойной щелчок.
+        """
         path = self.file_system_model.filePath(index)
         if path:
             logger.debug(f"Opening dataset: {path}")
@@ -57,6 +81,11 @@ class Explorer(QWidget):
 
     @QtCore.Slot()
     def open_folder(self):
+        """Открывает диалоговое окно для выбора папки.
+
+        После выбора папки обновляет корневой элемент в `files_tree`,
+        чтобы отобразить ее содержимое.
+        """
         logger.debug("Opening folder selection dialog.")
         choosen_folder = QFileDialog.getExistingDirectory(
             self,

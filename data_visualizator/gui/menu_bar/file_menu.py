@@ -3,7 +3,21 @@ from PySide6.QtGui import QAction
 
 
 class FileMenu(QMenu):
+    """Выпадающее меню "File" в строке меню главного окна.
+
+    Предоставляет действия для открытия наборов данных и папок.
+
+    Attributes:
+        main_window: Ссылка на главный объект окна приложения.
+        open_dataset_action (QAction): Действие для открытия файла с набором данных.
+        open_folder_action (QAction): Действие для открытия папки в проводнике.
+    """
     def __init__(self, main_window):
+        """Инициализирует меню "File".
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__("File", main_window)
         self.main_window = main_window
 

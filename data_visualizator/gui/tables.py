@@ -12,19 +12,44 @@ logger = logging.getLogger(__name__)
 
 
 class PandasModel(QAbstractTableModel):
+    """Модель данных Qt для отображения pandas DataFrame в QTableView.
+
+    Предоставляет интерфейс между DataFrame и представлением, позволяя
+    отображать, форматировать и взаимодействовать с данными.
+
+    Attributes:
+        _df (pd.DataFrame): DataFrame, который отображается в модели.
+        _column_colors (dict): Словарь для хранения цветов фона столбцов.
+    """
     def __init__(self, df: pd.DataFrame):
+        """Инициализирует модель с заданным DataFrame.
+
+        Args:
+            df (pd.DataFrame): DataFrame для отображения.
+        """
         super().__init__()
         logger.debug("Initializing PandasModel")
         self._df = df
         self._column_colors = {}
 
     def rowCount(self, parent=None):
+        """Возвращает количество строк в DataFrame."""
         return len(self._df.index)
 
     def columnCount(self, parent=None):
+        """Возвращает количество столбцов в DataFrame."""
         return len(self._df.columns)
 
     def data(self, index, role=Qt.DisplayRole):
+        """Возвращает данные для указанного индекса и роли.
+
+        Args:
+            index (QModelIndex): Индекс ячейки.
+            role (int): Роль данных (например, Qt.DisplayRole, Qt.BackgroundRole).
+
+        Returns:
+            Любой тип: Данные для ячейки или None, если индекс недействителен.
+        """
         if not index.isValid():
             return None
 
@@ -40,6 +65,16 @@ class PandasModel(QAbstractTableModel):
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
+        """Возвращает данные для заголовков строк или столбцов.
+
+        Args:
+            section (int): Индекс секции (строки или столбца).
+            orientation (Qt.Orientation): Горизонтальная или вертикальная ориентация.
+            role (int): Роль данных (обычно Qt.DisplayRole).
+
+        Returns:
+            str: Имя столбца или индекс строки.
+        """
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 return str(self._df.columns[section])
@@ -48,6 +83,12 @@ class PandasModel(QAbstractTableModel):
         return None
 
     def set_column_color(self, column_index, color):
+        """Устанавливает цвет фона для столбца по его индексу.
+
+        Args:
+            column_index (int): Индекс столбца.
+            color (str или QColor): Цвет для установки.
+        """
         logger.debug(f"Setting color for column {column_index} to {color}")
         self._column_colors[column_index] = QColor(color)
         top_left = self.index(0, column_index)
@@ -55,6 +96,12 @@ class PandasModel(QAbstractTableModel):
         self.dataChanged.emit(top_left, bottom_right, [Qt.BackgroundRole])
 
     def set_column_color_by_name(self, col_name, color):
+        """Устанавливает цвет фона для столбца по его имени.
+
+        Args:
+            col_name (str): Имя столбца.
+            color (str или QColor): Цвет для установки.
+        """
         if col_name not in self._df.columns:
             logger.debug(
                 f"Column '{col_name}' not found in DataFrame. Cannot set color."
@@ -70,6 +117,11 @@ class PandasModel(QAbstractTableModel):
         self.dataChanged.emit(top_left, bottom_right, [Qt.BackgroundRole])
 
     def reset_column_color(self, column_name):
+        """Сбрасывает цвет фона для столбца по его имени.
+
+        Args:
+            column_name (str): Имя столбца, цвет которого нужно сбросить.
+        """
         logger.debug(f"Resetting color for column '{column_name}'")
         if column_name not in self._df.columns:
             return
@@ -86,7 +138,24 @@ class PandasModel(QAbstractTableModel):
 
 
 class DataSetViewer(QWidget):
+    """Виджет для отображения набора данных в виде таблицы.
+
+    Использует QStackedLayout для переключения между плейсхолдером
+    (когда данные не загружены) и QTableView (когда данные загружены).
+
+    Attributes:
+        main_window: Ссылка на главный объект окна приложения.
+        data_model (PandasModel): Модель данных для таблицы.
+        target_var (str): Имя текущей целевой переменной.
+        stack (QStackedLayout): Layout для переключения представлений.
+        table_view (QTableView): Виджет таблицы для отображения данных.
+    """
     def __init__(self, main_window):
+        """Инициализирует DataSetViewer.
+
+        Args:
+            main_window: Ссылка на главный объект окна приложения.
+        """
         super().__init__()
         logger.debug("Initializing DataSetViewer")
 
@@ -111,6 +180,11 @@ class DataSetViewer(QWidget):
         self.table_view.doubleClicked.connect(self._on_table_view_double_clicked)
 
     def open_dataset(self, path):
+        """Загружает и отображает набор данных из файла.
+
+        Args:
+            path (str): Путь к файлу с набором данных.
+        """
         logger.debug(f"Opening dataset from path: {path}")
         df = read_dataset_from_Path(path)
         self.data_model = PandasModel(df)
@@ -119,6 +193,11 @@ class DataSetViewer(QWidget):
         logger.debug("Dataset opened and view updated")
 
     def get_all_column_names(self):
+        """Возвращает список имен всех столбцов в текущем наборе данных.
+
+        Returns:
+            list[str]: Список имен столбцов или `["no columns"]`, если данные не загружены.
+        """
         if self.data_model is None:
             logger.debug("No data model, returning default column list")
             return ["no columns"]
@@ -127,6 +206,14 @@ class DataSetViewer(QWidget):
         return list(self.data_model._df.columns)
 
     def change_target_var_color(self, target):
+        """Изменяет цвет столбца, соответствующего целевой переменной.
+
+        Сбрасывает цвет предыдущей целевой переменной (если она была) и
+        окрашивает новый целевой столбец в красный цвет.
+
+        Args:
+            target (str): Имя нового целевого столбца. "no target" для сброса.
+        """
         logger.debug(f"Changing target variable color. New target: '{target}'")
         if self.target_var:
             logger.debug(
@@ -143,6 +230,12 @@ class DataSetViewer(QWidget):
             self.target_var = None
 
     def get_features(self):
+        """Возвращает список признаков.
+
+        Признаками считаются все столбцы, кроме целевой переменной.
+
+        Returns:
+            list[str]: Список имен столбцов-признаков. Пустой список, если целевая переменная не выбрана."""
         if self.target_var is None:
             logger.debug("No target variable set, returning empty list of features.")
             return []
@@ -159,6 +252,14 @@ class DataSetViewer(QWidget):
 
     @QtCore.Slot()
     def _on_table_view_double_clicked(self, index):
+        """Обрабатывает двойной щелчок по ячейке таблицы.
+
+        В текущей реализации окрашивает столбец, по которому кликнули, в красный цвет.
+        (Возможно, это поведение для отладки).
+
+        Args:
+            index (QModelIndex): Индекс ячейки, по которой был сделан двойной щелчок.
+        """
         logger.debug(
             f"Double-clicked on table. Setting color for column index {index.column()}"
         )
