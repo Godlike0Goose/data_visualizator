@@ -3,6 +3,7 @@
 Содержит классы `PandasModel` и `DataSetViewer`, которые обеспечивают
 интеграцию `pandas.DataFrame` с `PySide6` для отображения и взаимодействия с данными.
 """
+
 import logging
 import pandas as pd
 from PySide6.QtWidgets import QTableView, QStackedLayout, QWidget, QLabel
@@ -72,7 +73,9 @@ class PandasModel(QAbstractTableModel):
 
         return None
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):  # pylint: disable=invalid-name
+    def headerData(
+        self, section, orientation, role=Qt.DisplayRole
+    ):  # pylint: disable=invalid-name
         """Возвращает данные для заголовков строк или столбцов.
 
         Args:
@@ -117,7 +120,9 @@ class PandasModel(QAbstractTableModel):
             return
         col = self._df.columns.get_loc(col_name)
 
-        logger.debug("Setting color for column '%s' (index %s) to %s", col_name, col, color)
+        logger.debug(
+            "Setting color for column '%s' (index %s) to %s", col_name, col, color
+        )
         self._column_colors[col] = QColor(color)
 
         top_left = self.index(0, col)
@@ -244,7 +249,7 @@ class DataSetViewer(QWidget):
         Признаками считаются все столбцы, кроме целевой переменной.
 
         Returns:
-            list[str]: Список имен столбцов-признаков. 
+            list[str]: Список имен столбцов-признаков.
               Пустой список, если целевая переменная не выбрана.
         """
         if self.target_var is None:

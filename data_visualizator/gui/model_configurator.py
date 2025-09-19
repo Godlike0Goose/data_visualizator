@@ -3,6 +3,7 @@
 Содержит классы для выбора модели, целевой переменной и признаков,
 которые используются для настройки пайплайна машинного обучения.
 """
+
 import logging
 from PySide6.QtWidgets import (
     QWidget,
@@ -34,6 +35,7 @@ class ModelConfigGroup(QWidget):
         target_select_widget (TargetSelectWidget): Виджет для выбора целевой переменной.
         feature_select_widget (FeatureSelectWidget): Виджет для выбора признаков.
     """
+
     def __init__(self, main_window):
         """Инициализирует ModelConfigGroup.
 
@@ -86,6 +88,7 @@ class ModelConfigGroup(QWidget):
 
 class ModelSelectWidget(QWidget):
     """Виджет для выбора модели машинного обучения."""
+
     def __init__(self, main_window):
         """Инициализирует ModelSelectWidget.
 
@@ -120,6 +123,7 @@ class ModelSelectWidget(QWidget):
 
 class TargetSelectWidget(QWidget):
     """Виджет для выбора целевой переменной из столбцов набора данных."""
+
     target_changed = Signal()
 
     def __init__(self, main_window):
@@ -169,6 +173,7 @@ class TargetSelectWidget(QWidget):
 
 class FeatureSelectWidget(QWidget):
     """Виджет для выбора признаков для модели."""
+
     def __init__(self, main_window):
         """Инициализирует FeatureSelectWidget.
 
@@ -241,6 +246,7 @@ class FeatureCheckBoxes(QWidget):  # pylint: disable=too-few-public-methods
         feature_menu (NonClosingMenu): Выпадающее меню с флажками.
         select_all_checkbox (QCheckBox): Флажок для выбора всех признаков.
     """
+
     def __init__(self, main_window):
         """Инициализирует FeatureCheckBoxes.
 

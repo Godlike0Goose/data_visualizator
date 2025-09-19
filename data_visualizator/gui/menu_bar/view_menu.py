@@ -1,4 +1,5 @@
 """Модуль для создания меню "View" в строке меню."""
+
 from PySide6.QtGui import QAction  # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMenu
 

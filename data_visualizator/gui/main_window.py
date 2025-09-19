@@ -3,6 +3,7 @@
 Определяет класс MainWindow, который собирает все компоненты интерфейса,
 и функцию `start` для запуска приложения.
 """
+
 import sys
 from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QSplitter, QWidget
 
