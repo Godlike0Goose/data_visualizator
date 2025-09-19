@@ -1,11 +1,11 @@
 import sys
-from PySide6.QtWidgets import QMainWindow, QApplication, QSplitter, QFileDialog
 from PySide6 import QtCore
+from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QSplitter
 
 from .explorer import Explorer
 from .tables import DataSetViewer
 from .model_configurator import ModelConfigGroup
-from .menu_bar import FileMenu
+from .menu_bar import FileMenu, ViewMenu
 
 from ..logging_setup import setup_logger
 
@@ -54,7 +54,9 @@ class MainWindow(QMainWindow):
         menu_bar.setNativeMenuBar(False)
 
         file_menu = FileMenu(self)
+        view_menu = ViewMenu(self)
         menu_bar.addMenu(file_menu)
+        menu_bar.addMenu(view_menu)
 
     def open_dataset(self):
         """Открывает диалоговое окно для выбора и загрузки файла с набором данных."""
@@ -106,6 +108,21 @@ class MainWindow(QMainWindow):
     def open_folder_in_explorer(self):
         """Открывает диалог выбора папки в виджете проводника."""
         self.explorer.open_folder()
+
+    def toggle_explorer(self, checked):
+        """Переключает видимость виджета проводника."""
+        logger.debug(f"Toggling explorer visibility to {checked}")
+        self.explorer.setVisible(checked)
+
+    def toggle_dataset_viewer(self, checked):
+        """Переключает видимость виджета для просмотра данных."""
+        logger.debug(f"Toggling dataset viewer visibility to {checked}")
+        self.dataset_viewer.setVisible(checked)
+
+    def toggle_model_config(self, checked):
+        """Переключает видимость виджета конфигуратора модели."""
+        logger.debug(f"Toggling model configurator visibility to {checked}")
+        self.model_config.setVisible(checked)
 
 
 def start():
