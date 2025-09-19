@@ -10,6 +10,7 @@ from ..crud import read_dataset_from_Path
 
 logger = logging.getLogger(__name__)
 
+
 class PandasModel(QAbstractTableModel):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
@@ -46,19 +47,21 @@ class PandasModel(QAbstractTableModel):
                 return str(self._df.index[section])
         return None
 
-    def set_column_color(self, col, color):
-        logger.debug(f"Setting color for column {col} to {color}")
-        self._column_colors[col] = QColor(color)
-        top_left = self.index(0, col)
-        bottom_right = self.index(self.rowCount() - 1, col)
+    def set_column_color(self, column_index, color):
+        logger.debug(f"Setting color for column {column_index} to {color}")
+        self._column_colors[column_index] = QColor(color)
+        top_left = self.index(0, column_index)
+        bottom_right = self.index(self.rowCount() - 1, column_index)
         self.dataChanged.emit(top_left, bottom_right, [Qt.BackgroundRole])
-    
+
     def set_column_color_by_name(self, col_name, color):
         if col_name not in self._df.columns:
-            logger.debug(f"Column '{col_name}' not found in DataFrame. Cannot set color.")
+            logger.debug(
+                f"Column '{col_name}' not found in DataFrame. Cannot set color."
+            )
             return
         col = self._df.columns.get_loc(col_name)
-        
+
         logger.debug(f"Setting color for column '{col_name}' (index {col}) to {color}")
         self._column_colors[col] = QColor(color)
 
@@ -78,7 +81,7 @@ class PandasModel(QAbstractTableModel):
             logger.debug(f"Color for column '{column_name}' (index {col}) removed")
 
             top_left = self.index(0, col)
-            bottom_right = self.index(self.rowCount()-1, col)
+            bottom_right = self.index(self.rowCount() - 1, col)
             self.dataChanged.emit(top_left, bottom_right, [Qt.BackgroundRole])
 
 
@@ -94,16 +97,18 @@ class DataSetViewer(QWidget):
 
         self.stack = QStackedLayout(self)
 
-        self.label = QLabel("No CSV opened", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.placeholder_label = QLabel(
+            "No CSV opened", alignment=Qt.AlignmentFlag.AlignCenter
+        )
         self.table_view = QTableView(self)
 
-        self.stack.addWidget(self.label)
+        self.stack.addWidget(self.placeholder_label)
         self.stack.addWidget(self.table_view)
         self.stack.setCurrentIndex(0)
 
         self.setLayout(self.stack)
 
-        self.table_view.doubleClicked.connect(self.change_color)
+        self.table_view.doubleClicked.connect(self._on_table_view_double_clicked)
 
     def open_dataset(self, path):
         logger.debug(f"Opening dataset from path: {path}")
@@ -113,23 +118,25 @@ class DataSetViewer(QWidget):
         self.stack.setCurrentIndex(1)
         logger.debug("Dataset opened and view updated")
 
-    def get_all_coloumns_names(self):
+    def get_all_column_names(self):
         if self.data_model is None:
             logger.debug("No data model, returning default column list")
             return ["no columns"]
         columns = list(self.data_model._df.columns)
         logger.debug(f"Returning column names: {columns}")
         return list(self.data_model._df.columns)
-    
+
     def change_target_var_color(self, target):
         logger.debug(f"Changing target variable color. New target: '{target}'")
         if self.target_var:
-            logger.debug(f"Resetting color for old target variable: '{self.target_var}'")
+            logger.debug(
+                f"Resetting color for old target variable: '{self.target_var}'"
+            )
             self.data_model.reset_column_color(self.target_var)
-        
+
         if target != "no target":
             logger.debug(f"Setting color for new target variable: '{target}'")
-            self.data_model.set_column_color_by_name(target,"red")
+            self.data_model.set_column_color_by_name(target, "red")
             self.target_var = target
         else:
             logger.debug("No target variable selected.")
@@ -139,14 +146,20 @@ class DataSetViewer(QWidget):
         if self.target_var is None:
             logger.debug("No target variable set, returning empty list of features.")
             return []
-        else:
-            features = [feature for feature in self.get_all_coloumns_names() if feature != self.target_var]
-            logger.debug(f"Returning features (all columns except target '{self.target_var}'): {features}")
-            return features
 
-
+        features = [
+            feature
+            for feature in self.get_all_column_names()
+            if feature != self.target_var
+        ]
+        logger.debug(
+            f"Returning features (all columns except target '{self.target_var}'): {features}"
+        )
+        return features
 
     @QtCore.Slot()
-    def change_color(self, index):
-        logger.debug(f"Double-clicked on table. Setting color for column index {index.column()}")
+    def _on_table_view_double_clicked(self, index):
+        logger.debug(
+            f"Double-clicked on table. Setting color for column index {index.column()}"
+        )
         self.data_model.set_column_color(index.column(), "red")
