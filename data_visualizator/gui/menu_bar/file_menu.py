@@ -1,8 +1,9 @@
+"""Модуль для создания меню "File" в строке меню."""
 from PySide6.QtWidgets import QMenu
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction  # pylint: disable=no-name-in-module
 
 
-class FileMenu(QMenu):
+class FileMenu(QMenu):  # pylint: disable=too-few-public-methods
     """Выпадающее меню "File" в строке меню главного окна.
 
     Предоставляет действия для открытия наборов данных и папок.
@@ -12,6 +13,7 @@ class FileMenu(QMenu):
         open_dataset_action (QAction): Действие для открытия файла с набором данных.
         open_folder_action (QAction): Действие для открытия папки в проводнике.
     """
+
     def __init__(self, main_window):
         """Инициализирует меню "File".
 

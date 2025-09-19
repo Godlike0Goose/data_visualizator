@@ -1,3 +1,8 @@
+"""Модуль для виджетов конфигурации модели.
+
+Содержит классы для выбора модели, целевой переменной и признаков,
+которые используются для настройки пайплайна машинного обучения.
+"""
 import logging
 from PySide6.QtWidgets import (
     QWidget,
@@ -11,7 +16,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QCheckBox,
 )
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QObject
 
 logger = logging.getLogger(__name__)
 
@@ -72,9 +77,9 @@ class ModelConfigGroup(QWidget):
         и переключает QStackedLayout для их отображения.
         """
         logger.debug("ModelConfigGroup: showing widgets")
-        self.model_select_widget.show_widget()
-        self.target_select_widget.show_widget()
-        self.feature_select_widget.show_widget()
+        self.model_select_widget.update_widget()
+        self.target_select_widget.update_widget()
+        self.feature_select_widget.update_widget()
         self.stack.setCurrentIndex(1)
         logger.debug("ModelConfigGroup: widgets shown, stack index set to 1")
 
@@ -91,8 +96,16 @@ class ModelSelectWidget(QWidget):
         logger.debug("Initializing ModelSelectWidget")
 
         self.main_window = main_window
+        self.model_select_label = QLabel("Select a ML model:")
+        self.model_select_drop_menu = QComboBox()
 
-    def show_widget(self):
+        h_layout = QHBoxLayout(self)
+        h_layout.addWidget(self.model_select_label)
+        h_layout.addWidget(self.model_select_drop_menu)
+
+        self.setLayout(h_layout)
+
+    def update_widget(self):
         """Создает и отображает элементы управления для выбора модели.
 
         Этот метод вызывается, когда нужно показать виджет (после загрузки данных),
@@ -100,15 +113,8 @@ class ModelSelectWidget(QWidget):
         никогда не понадобиться.
         """
         logger.debug("ModelSelectWidget: showing widget")
-        self.model_select_label = QLabel("Select a ML model:")
-        self.model_select_drop_menu = QComboBox()
+        self.model_select_drop_menu.clear()
         self.model_select_drop_menu.addItems(["None", "Elastic-Net"])
-
-        h_layout = QHBoxLayout(self)
-        h_layout.addWidget(self.model_select_label)
-        h_layout.addWidget(self.model_select_drop_menu)
-
-        self.setLayout(h_layout)
         logger.debug("ModelSelectWidget: widget shown")
 
 
@@ -125,20 +131,11 @@ class TargetSelectWidget(QWidget):
         super().__init__()
         logger.debug("Initializing TargetSelectWidget")
         self.main_window = main_window
-
-    def show_widget(self):
-        """Создает и отображает элементы управления для выбора целевой переменной.
-
-        Заполняет выпадающий список именами столбцов из загруженного
-        набора данных.
-        """
-        logger.debug("TargetSelectWidget: showing widget")
         self.target_select_label = QLabel("Select target var:")
         self.target_select_combobox = QComboBox()
-        self.target_select_combobox.addItem("no target")
-        columns = self.main_window.get_all_column_names()
-        logger.debug(f"TargetSelectWidget: got columns: {columns}")
-        self.target_select_combobox.addItems(columns)
+        self.target_select_combobox.currentTextChanged.connect(
+            self._on_target_var_changed
+        )
 
         h_layout = QHBoxLayout(self)
         h_layout.addWidget(self.target_select_label)
@@ -146,9 +143,18 @@ class TargetSelectWidget(QWidget):
 
         self.setLayout(h_layout)
 
-        self.target_select_combobox.currentTextChanged.connect(
-            self._on_target_var_changed
-        )
+    def update_widget(self):
+        """Создает и отображает элементы управления для выбора целевой переменной.
+
+        Заполняет выпадающий список именами столбцов из загруженного
+        набора данных.
+        """
+        logger.debug("TargetSelectWidget: showing widget")
+        self.target_select_combobox.clear()
+        self.target_select_combobox.addItem("no target")
+        columns = self.main_window.get_all_column_names()
+        logger.debug("TargetSelectWidget: got columns: %s", columns)
+        self.target_select_combobox.addItems(columns)
         logger.debug("TargetSelectWidget: widget shown")
 
     def _on_target_var_changed(self, target):
@@ -157,7 +163,7 @@ class TargetSelectWidget(QWidget):
         Args:
             target (str): Новое имя целевой переменной.
         """
-        logger.debug(f"TargetSelectWidget: target variable changed to '{target}'")
+        logger.debug("TargetSelectWidget: target variable changed to '%s'", target)
         self.main_window.change_target_var(target)
 
 
@@ -174,9 +180,6 @@ class FeatureSelectWidget(QWidget):
 
         self.main_window = main_window
 
-    def show_widget(self):
-        """Создает и отображает элементы управления для выбора признаков."""
-        logger.debug("FeatureSelectWidget: showing widget")
         self.feature_select_label = QLabel("Select feature vars:")
         self.feature_checkboxes = FeatureCheckBoxes(self.main_window)
 
@@ -185,6 +188,11 @@ class FeatureSelectWidget(QWidget):
         h_layout.addWidget(self.feature_checkboxes)
 
         self.setLayout(h_layout)
+
+    def update_widget(self):
+        """Создает и отображает элементы управления для выбора признаков."""
+        logger.debug("FeatureSelectWidget: showing widget")
+        self.update_feature_list()
         logger.debug("FeatureSelectWidget: widget shown")
 
     def update_feature_list(self):
@@ -194,12 +202,12 @@ class FeatureSelectWidget(QWidget):
         logger.debug("FeatureSelectWidget: features updated")
 
 
-class NonClosingMenu(QMenu):
+class NonClosingMenu(QMenu):  # pylint: disable=too-few-public-methods
     """A QMenu that doesn't close when a checkable action is clicked."""
 
     action_toggled = Signal()
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event):  # pylint: disable=invalid-name
         """Переопределяет событие отпускания кнопки мыши.
 
         Предотвращает закрытие меню при клике на флажок, позволяя
@@ -212,14 +220,16 @@ class NonClosingMenu(QMenu):
         if action and action.isEnabled() and action.isCheckable():
             action.setChecked(not action.isChecked())
             logger.debug(
-                f"NonClosingMenu: toggled action '{action.text()}' to {action.isChecked()}"
+                "NonClosingMenu: toggled action '%s' to %s",
+                action.text(),
+                action.isChecked(),
             )
             self.action_toggled.emit()
         else:
             super().mouseReleaseEvent(event)
 
 
-class FeatureCheckBoxes(QWidget):
+class FeatureCheckBoxes(QWidget):  # pylint: disable=too-few-public-methods
     """Виджет с кнопкой, открывающей выпадающее меню с флажками для выбора признаков.
 
     Также содержит флажок "Select All" для быстрого выбора/снятия выбора
@@ -302,7 +312,7 @@ class FeatureCheckBoxes(QWidget):
             state (int): Новое состояние флажка (Qt.CheckState).
         """
         is_checked = state == Qt.CheckState.Checked.value
-        logger.debug(f"FeatureCheckBoxes: toggling all features to {is_checked}")
+        logger.debug("FeatureCheckBoxes: toggling all features to %s", is_checked)
 
         # Block signals to avoid recursive calls
         self.feature_menu.blockSignals(True)

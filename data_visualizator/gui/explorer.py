@@ -1,16 +1,19 @@
+"""Модуль для виджета проводника файлов.
+
+Содержит класс Explorer, который предоставляет древовидное представление
+файловой системы для навигации и открытия наборов данных.
+"""
 import os
 import logging
 from PySide6.QtWidgets import (
     QWidget,
+    QVBoxLayout,
+    QTreeView,
+    QFileDialog,
     QLabel,
     QFileSystemModel,
-    QTreeView,
-    QVBoxLayout,
-    QPushButton,
-    QFileDialog,
 )
-from PySide6 import QtCore
-from PySide6.QtCore import QDir
+from PySide6.QtCore import QDir, Slot
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +31,7 @@ class Explorer(QWidget):
         files_tree (QTreeView): Древовидное представление для отображения файлов.
         opened_folder_name (QLabel): Метка для отображения имени открытой папки.
     """
+
     def __init__(self, main_window):
         """Инициализирует виджет Explorer.
 
@@ -63,7 +67,7 @@ class Explorer(QWidget):
         self.files_tree.doubleClicked.connect(self.open_table)
         logger.debug("Explorer initialized")
 
-    @QtCore.Slot()
+    @Slot()
     def open_table(self, index):
         """Открывает набор данных, соответствующий выбранному элементу в дереве.
 
@@ -74,12 +78,12 @@ class Explorer(QWidget):
         """
         path = self.file_system_model.filePath(index)
         if path:
-            logger.debug(f"Opening dataset: {path}")
+            logger.debug("Opening dataset: %s", path)
             self.main_window.open_dataset_from_path(path)
         else:
             logger.debug("Path is empty, not opening dataset.")
 
-    @QtCore.Slot()
+    @Slot()
     def open_folder(self):
         """Открывает диалоговое окно для выбора папки.
 
@@ -93,14 +97,14 @@ class Explorer(QWidget):
             dir=os.path.expanduser("~"),
         )
         if choosen_folder:
-            logger.debug(f"Folder chosen: {choosen_folder}")
+            logger.debug("Folder chosen: %s", choosen_folder)
             index = self.file_system_model.index(choosen_folder)
             if index.isValid():
-                logger.debug(f"Setting new root index for QTreeView: {index}")
+                logger.debug("Setting new root index for QTreeView: %s", index)
                 self.files_tree.setRootIndex(index)
             else:
                 logger.debug(
-                    f"Chosen folder '{choosen_folder}' resulted in an invalid index."
+                    "Chosen folder '%s' resulted in an invalid index.", choosen_folder
                 )
         else:
             logger.debug("Folder selection was cancelled.")

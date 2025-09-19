@@ -1,6 +1,10 @@
+"""Главный модуль GUI приложения.
+
+Определяет класс MainWindow, который собирает все компоненты интерфейса,
+и функцию `start` для запуска приложения.
+"""
 import sys
-from PySide6 import QtCore
-from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QSplitter
+from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QSplitter, QWidget
 
 from .explorer import Explorer
 from .tables import DataSetViewer
@@ -24,6 +28,7 @@ class MainWindow(QMainWindow):
         model_config (ModelConfigGroup): Виджет для настройки моделей ML.
         splitter (QSplitter): Разделитель для управления размерами виджетов.
     """
+
     def __init__(self):
         """Инициализирует главное окно."""
         super().__init__()
@@ -40,7 +45,7 @@ class MainWindow(QMainWindow):
         self.dataset_viewer = DataSetViewer(self)
         self.model_config = ModelConfigGroup(self)
 
-        self.splitter = QSplitter(QtCore.Qt.Orientation.Horizontal)
+        self.splitter = QSplitter()
         self.splitter.addWidget(self.explorer)
         self.splitter.addWidget(self.dataset_viewer)
         self.splitter.addWidget(self.model_config)
@@ -111,17 +116,17 @@ class MainWindow(QMainWindow):
 
     def toggle_explorer(self, checked):
         """Переключает видимость виджета проводника."""
-        logger.debug(f"Toggling explorer visibility to {checked}")
+        logger.debug("Toggling explorer visibility to %s", checked)
         self.explorer.setVisible(checked)
 
     def toggle_dataset_viewer(self, checked):
         """Переключает видимость виджета для просмотра данных."""
-        logger.debug(f"Toggling dataset viewer visibility to {checked}")
+        logger.debug("Toggling dataset viewer visibility to %s", checked)
         self.dataset_viewer.setVisible(checked)
 
     def toggle_model_config(self, checked):
         """Переключает видимость виджета конфигуратора модели."""
-        logger.debug(f"Toggling model configurator visibility to {checked}")
+        logger.debug("Toggling model configurator visibility to %s", checked)
         self.model_config.setVisible(checked)
 
 

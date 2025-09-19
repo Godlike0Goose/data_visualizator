@@ -1,8 +1,9 @@
-from PySide6.QtGui import QAction
+"""Модуль для создания меню "View" в строке меню."""
+from PySide6.QtGui import QAction  # pylint: disable=no-name-in-module
 from PySide6.QtWidgets import QMenu
 
 
-class ViewMenu(QMenu):
+class ViewMenu(QMenu):  # pylint: disable=too-few-public-methods
     """Выпадающее меню "Вид" в строке меню главного окна.
 
     Предоставляет действия для переключения видимости основных виджетов.
@@ -25,9 +26,7 @@ class ViewMenu(QMenu):
 
         self.toggle_explorer_action = QAction("Проводник", self, checkable=True)
         self.toggle_explorer_action.setChecked(True)
-        self.toggle_explorer_action.triggered.connect(
-            self.main_window.toggle_explorer
-        )
+        self.toggle_explorer_action.triggered.connect(self.main_window.toggle_explorer)
 
         self.toggle_viewer_action = QAction("Просмотр данных", self, checkable=True)
         self.toggle_viewer_action.setChecked(True)
@@ -37,7 +36,9 @@ class ViewMenu(QMenu):
 
         self.toggle_config_action = QAction("Конфигуратор модели", self, checkable=True)
         self.toggle_config_action.setChecked(True)
-        self.toggle_config_action.triggered.connect(self.main_window.toggle_model_config)
+        self.toggle_config_action.triggered.connect(
+            self.main_window.toggle_model_config
+        )
 
         self.addAction(self.toggle_explorer_action)
         self.addAction(self.toggle_viewer_action)
