@@ -39,3 +39,22 @@ def read_dataset_from_Path(file_path):
         return pd.read_pickle(path)
     else:
         raise ValueError(f"Неподдерживаемый формат файла: {suffix}")
+    
+def save_dataframe_to_path( df,path):
+    path = Path(path)
+    suffix = path.suffix.lower()
+    if suffix == ".csv":
+        return df.to_csv(path)
+    elif suffix in [".xls", ".xlsx"]:
+        return df.to_excel(path)
+    elif suffix == ".json":
+        return df.to_json(path)
+    elif suffix == ".parquet":
+        return df.to_parquet(path)
+    elif suffix == ".feather":
+        return df.to_feather(path)
+    elif suffix in [".h5", ".hdf5"]:
+        return df.to_hdf(path)
+    elif suffix == ".pkl":
+        return df.to_pickle(path)
+ 
