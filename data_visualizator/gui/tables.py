@@ -6,7 +6,7 @@
 
 import logging
 from PySide6.QtWidgets import QTableView, QStackedLayout, QLabel, QMenu
-from PySide6.QtCore import QAbstractTableModel, Qt, Slot
+from PySide6.QtCore import QAbstractTableModel, Qt, Slot, Signal
 from PySide6.QtGui import QColor
 import pandas as pd
 
@@ -188,25 +188,26 @@ class DataSetViewer(BaseWidget):
     (когда данные не загружены) и QTableView (когда данные загружены).
 
     Attributes:
-        main_window: Ссылка на главный объект окна приложения.
+        app_state: Ссылка на объект состояния приложения.
         data_model (PandasModel): Модель данных для таблицы.
         target_var (str): Имя текущей целевой переменной.
         stack (QStackedLayout): Layout для переключения представлений.
         table_view (QTableView): Виджет таблицы для отображения данных.
     """
 
-    def __init__(self, main_window):
+    target_var_selected = Signal(str)
+
+    def __init__(self, app_state):
         """Инициализирует DataSetViewer.
 
         Args:
-            main_window: Ссылка на главный объект окна приложения.
+            app_state: Ссылка на объект состояния приложения.
         """
         super().__init__("Dataset Viewer")
         logger.debug("Initializing DataSetViewer")
 
-        self.target_var = None
-
-        self.main_window = main_window
+        self.app_state = app_state
+        self.target_var = self.app_state.target_var
         self.data_model = None
 
         self.placeholder_label = QLabel(
@@ -226,31 +227,22 @@ class DataSetViewer(BaseWidget):
         self.stack.setCurrentIndex(0)
         self.content_widget.setLayout(self.stack)
 
-    def open_dataset(self, path):
+        # Подписываемся на сигналы от AppState
+        self.app_state.dataset_loaded.connect(self.on_dataset_loaded)
+        self.app_state.target_var_changed.connect(self.change_target_var_color)
+
+    @Slot(pd.DataFrame, str)
+    def on_dataset_loaded(self, df, path):
         """Загружает и отображает набор данных из файла.
 
         Args:
-            path (str): Путь к файлу с набором данных.
+            df (pd.DataFrame): Загруженный DataFrame.
+            path (str): Путь к файлу.
         """
-        logger.debug("Opening dataset from path: %s", path)
-        df = read_dataset_from_path(path)
         self.data_model = PandasModel(df)
         self.table_view.setModel(self.data_model)
         self.stack.setCurrentIndex(1)
         logger.debug("Dataset opened and view updated")
-
-    def get_all_column_names(self):
-        """Возвращает список имен всех столбцов в текущем наборе данных.
-
-        Returns:
-            list[str]: Список имен столбцов или `["no columns"]`, если данные не загружены.
-        """
-        if self.data_model is None:
-            logger.debug("No data model, returning default column list")
-            return ["no columns"]
-        columns = list(self.data_model.get_df().columns)
-        logger.debug("Returning column names: %s", columns)
-        return columns
 
     def change_target_var_color(self, target):
         """Изменяет цвет столбца, соответствующего целевой переменной.
@@ -276,27 +268,6 @@ class DataSetViewer(BaseWidget):
             logger.debug("No target variable selected.")
             self.target_var = None
 
-    def get_features(self):
-        """Возвращает список признаков.
-
-        Признаками считаются все столбцы, кроме целевой переменной.
-
-        Returns:
-            list[str]: Список имен столбцов-признаков.
-              Пустой список, если целевая переменная не выбрана.
-        """
-        if self.target_var is None:
-            logger.debug("No target variable set, returning empty list of features.")
-            return []
-        df = self.data_model.get_df()
-        features = get_features(df, self.target_var)
-        logger.debug(
-            "Returning features (all columns except target '%s'): %s",
-            self.target_var,
-            features,
-        )
-        return features
-
     @Slot()
     def on_header_context_menu(self, pos):
         """
@@ -317,7 +288,7 @@ class DataSetViewer(BaseWidget):
 
             # Соединяем действие с методом главного окна, передавая имя столбца
             set_as_target_action.triggered.connect(
-                lambda: self.main_window.change_target_var(column_name)
+                lambda: self.target_var_selected.emit(column_name)
             )
 
             # Отображаем меню в позиции курсора

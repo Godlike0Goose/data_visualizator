@@ -5,7 +5,7 @@
 """
 
 import logging
-from PySide6.QtWidgets import QSplitter, QWidget
+from PySide6.QtWidgets import QSplitter, QWidget, QApplication
 from PySide6.QtCore import Qt, QMimeData, QObject, QEvent
 from PySide6.QtGui import (
     QDrag,
@@ -37,42 +37,20 @@ class ReorderableSplitter(QSplitter):
     def addWidget(self, widget: QWidget):
         """Добавляет виджет и устанавливает фильтр событий для его заголовка."""
         super().addWidget(widget)
-        if isinstance(widget, BaseWidget):
-            widget.title_bar.setMouseTracking(True)
-            widget.title_bar.installEventFilter(self)
+        # Если у виджета есть сигнал drag_started, подключаемся к нему
+        if hasattr(widget, "drag_started"):
+            widget.drag_started.connect(self._on_drag_started)
 
-    def eventFilter(self, watched: QWidget, event: QEvent) -> bool:
-        """Фильтрует события от дочерних виджетов для инициации drag-and-drop."""
-        if (
-            event.type() == QEvent.Type.MouseButtonPress
-            and event.button() == Qt.MouseButton.LeftButton
-        ):
-            # `watched` - это title_bar, нам нужен его родительский виджет (BaseWidget)
-            self._drag_widget = watched.parent()
-            logger.debug(f"Drag started on widget: {self._drag_widget}")
-            return True  # Захватываем событие
-
-        if (
-            event.type() == QEvent.Type.MouseMove
-            and event.buttons() == Qt.MouseButton.LeftButton
-        ):
-            if self._drag_widget:
-                drag = QDrag(self)
-                mime_data = QMimeData()
-                mime_data.setText("reorder-widget")
-                drag.setMimeData(mime_data)
-                drag.exec(Qt.DropAction.MoveAction)
-                self._drag_widget = None
-                return True
-
-        if (
-            event.type() == QEvent.Type.MouseButtonRelease
-            and event.button() == Qt.MouseButton.LeftButton
-        ):
-            self._drag_widget = None
-            logger.debug("Drag cancelled.")
-
-        return super().eventFilter(watched, event)
+    def _on_drag_started(self, widget: QWidget):
+        """Начинает операцию drag-and-drop для указанного виджета."""
+        self._drag_widget = widget
+        logger.debug(f"Drag started on widget: {self._drag_widget}")
+        drag = QDrag(self)
+        mime_data = QMimeData()
+        mime_data.setText("reorder-widget")
+        drag.setMimeData(mime_data)
+        drag.exec(Qt.DropAction.MoveAction)
+        self._drag_widget = None
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         """Обрабатывает вход курсора с перетаскиваемым объектом."""
