@@ -1,4 +1,5 @@
 import os
+import logging
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
@@ -11,13 +12,17 @@ from PySide6.QtWidgets import (
 from PySide6 import QtCore
 from PySide6.QtCore import QDir
 
+logger = logging.getLogger(__name__)
+
 
 class Explorer(QWidget):
     def __init__(self, main_widow):
         super().__init__()
+        logger.debug("Initializing Explorer")
 
         self.main_window = main_widow
         self.datasets_dir = os.path.abspath("./datasets")
+        logger.debug(f"Default datasets directory: {self.datasets_dir}")
 
         self.file_system_model = QFileSystemModel()
         self.file_system_model.setRootPath("")
@@ -36,27 +41,40 @@ class Explorer(QWidget):
         self.choosing_folder_button = QPushButton("choose a dir")
 
         self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.files_tree)
         self.layout.addWidget(self.opened_folder_name)
+        self.layout.addWidget(self.files_tree)
         self.layout.addWidget(self.choosing_folder_button)
 
         self.files_tree.doubleClicked.connect(self.open_table)
         self.choosing_folder_button.clicked.connect(self.open_folder)
+        logger.debug("Explorer initialized")
 
     @QtCore.Slot()
     def open_table(self, index):
+        logger.debug(f"Double-clicked on item with index: {index}")
         path = self.file_system_model.filePath(index)
+        logger.debug(f"File path from index: {path}")
         if path:
+            logger.debug(f"Opening dataset: {path}")
             self.main_window.open_dataset(path)
+        else:
+            logger.debug("Path is empty, not opening dataset.")
 
     @QtCore.Slot()
     def open_folder(self):
+        logger.debug("Opening folder selection dialog.")
         choosen_folder = QFileDialog.getExistingDirectory(
             self,
             caption="выбор папки",
             dir=os.path.expanduser("~"),
         )
         if choosen_folder:
+            logger.debug(f"Folder chosen: {choosen_folder}")
             index = self.file_system_model.index(choosen_folder)
             if index.isValid():
+                logger.debug(f"Setting new root index for QTreeView: {index}")
                 self.files_tree.setRootIndex(index)
+            else:
+                logger.debug(f"Chosen folder '{choosen_folder}' resulted in an invalid index.")
+        else:
+            logger.debug("Folder selection was cancelled.")
