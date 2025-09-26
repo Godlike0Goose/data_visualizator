@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ModelsSupportedParams:
 
     class LassoModel(Enum):
