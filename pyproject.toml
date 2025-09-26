@@ -21,8 +21,6 @@ start-gui = "data_visualizator.gui:start"
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 pylint = "^3.3.8"
-kagglehub = {extras = ["pandas-datasets"], version = "^0.3.13"}
-kaggle = "^1.7.4.5"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
