@@ -2,6 +2,7 @@ from dataclasses import make_dataclass, field
 
 from .config.models_supported_params import ALL_PARAMS
 
+
 class ModelParams:
     """
     Класс для хранения параметров модели с их типами.
@@ -23,9 +24,5 @@ class ModelParams:
     __annotations__ = ALL_PARAMS
 
     def __init__(self):
-        for param in ALL_PARAMS.items():
+        for param in ALL_PARAMS.keys():
             setattr(self, param, None)
-
-
-
-    
