@@ -40,5 +40,3 @@ def read_data_file(file_path: str):
         return pd.read_pickle(path)
     else:
         raise ValueError(f"Неподдерживаемый формат файла: {suffix}")
-
-    return ModelsSupportedParams[model_name].value
