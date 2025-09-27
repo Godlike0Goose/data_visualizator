@@ -1,12 +1,5 @@
 from enum import StrEnum
 
-
-class SupportedModels(StrEnum):
-    Ridge_model = "Ridge"
-    Lasso_model = "Lasso"
-    Elastic_Net_model = "ElasticNet"
-
-
 class AllParamNames(StrEnum):
     alpha = "alpha"
     random_state = "random_state"
