@@ -1,33 +1,31 @@
-from dataclasses import asdict, dataclass
-from typing import Optional
+from dataclasses import make_dataclass, field
 
+from .config.models_supported_params import ALL_PARAMS
 
-@dataclass
 class ModelParams:
     """
-    A data class to store parameters for machine learning models.
-    Only non-None parameters will be used when passed to a model.
+    Класс для хранения параметров модели с их типами.
+
+    Атрибуты:
+        alpha (Optional[float]): Параметр регуляризации.
+        random_state (Optional[int]): Случайное зерно для воспроизводимости.
+        copy_X (Optional[bool]): Флаг копирования входных данных перед обработкой.
+        selection (Optional[str]): Метод выбора признаков.
+        l1_ratio (Optional[float]): Соотношение L1/L2 для ElasticNet.
+        fit_intercept (Optional[bool]): Флаг вычисления свободного члена.
+        tol (Optional[float]): Допустимая точность сходимости.
+        solver (Optional[str]): Алгоритм оптимизации.
+        max_iter (Optional[int]): Максимальное количество итераций.
+        positive (Optional[bool]): Флаг, разрешающий только положительные коэффициенты.
     """
 
-    alpha: Optional[float] = None  # [0, inf)
-    l1_ratio: Optional[float] = None
-    fit_intercept: Optional[bool] = None
-    max_iter: Optional[int] = None
-    tol: Optional[float] = None
-    solver: Optional[str] = None
-    positive: Optional[bool] = None
-    copy_X: Optional[bool] = None
-    random_state: Optional[int] = None
-    selection: Optional[str] = None
+    __slots__ = [ALL_PARAMS.keys()]
+    __annotations__ = ALL_PARAMS
 
-    def set_param(self, param: str, value):
-        """Sets a parameter and returns its new value."""
-        setattr(self, param, value)
-        return getattr(self, param, None)
+    def __init__(self):
+        for param in ALL_PARAMS.items():
+            setattr(self, param, None)
 
-    def to_dict(self) -> dict:
-        """
-        Converts the parameters to a dictionary, excluding None values.
-        This is useful for passing parameters to scikit-learn models.
-        """
-        return {k: v for k, v in asdict(self).items() if v is not None}
+
+
+    
