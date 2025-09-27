@@ -1,4 +1,5 @@
-from dataclasses import make_dataclass, field
+from copy import deepcopy
+from trycast import isassignable
 
 from .config.models_supported_params import ALL_PARAMS
 
@@ -20,9 +21,38 @@ class ModelParams:
         positive (Optional[bool]): Флаг, разрешающий только положительные коэффициенты.
     """
 
-    __slots__ = [ALL_PARAMS.keys()]
+    __slots__ = list(ALL_PARAMS.keys())
     __annotations__ = ALL_PARAMS
 
-    def __init__(self):
-        for param in ALL_PARAMS.keys():
-            setattr(self, param, None)
+    def __init__(self, **kwargs):
+        for param, expected_type in self.__annotations__.items():
+            value = kwargs.get(param, None)
+
+            if value is not None and not isassignable(value, expected_type):
+                raise TypeError(
+                    f"Parameter '{param}' must be of type {expected_type}, got {type(value)}"
+                )
+
+            setattr(self, param, value)
+
+        for key in kwargs:
+            if key not in self.__annotations__:
+                raise ValueError(f"Unknown parameter '{key}' for ModelParams")
+
+    def __repr__(self):
+        params = ", ".join(
+            f"{param}={getattr(self, param)!r}" for param in self.__annotations__
+        )
+        return f"{self.__class__.__name__}({params})"
+
+    def __eq__(self, other):
+        if not isinstance(other, ModelParams):
+            return False
+        return all(
+            getattr(self, param) == getattr(other, param)
+            for param in self.__annotations__
+        )
+
+    def copy(self):
+        """Возвращает глубокую копию объекта."""
+        return deepcopy(self)
