@@ -1,7 +1,7 @@
 from copy import deepcopy
 from trycast import isassignable
 
-from .config.models_supported_params import ALL_PARAMS
+from .config import ALL_PARAMS, AllParamNames
 
 
 class ModelParams:
@@ -57,10 +57,10 @@ class ModelParams:
         """Возвращает глубокую копию объекта."""
         return deepcopy(self)
 
-    def set_params(self, param, value):
+    def set_param(self, param: AllParamNames, value):
         """Устанавливает значение параметра."""
-        if not hasattr(self, param):
-            raise ValueError(f"Unknown parameter '{param}' for ModelParams")
+        if not hasattr(self, param.value):
+            raise ValueError(f"Unknown parameter '{param.value}' for ModelParams")
 
-        if not isassignable(value, self.__annotations__[param]):
+        if not isassignable(value, self.__annotations__[param.value]):
             raise TypeError
