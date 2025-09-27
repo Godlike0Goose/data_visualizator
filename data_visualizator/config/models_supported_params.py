@@ -47,7 +47,6 @@ class ModelsSupportedParams(Enum):
         AllParamNames.selection,
     }
 
-
     Ridge_model = {
         AllParamNames.alpha,
         AllParamNames.fit_intercept,
@@ -58,6 +57,7 @@ class ModelsSupportedParams(Enum):
         AllParamNames.positive,
         AllParamNames.random_state,
     }
+
     @classmethod
     def get_params_for_model(cls, model_name: str) -> set:
         """Возвращает множество поддерживаемых параметров для указанной модели."""

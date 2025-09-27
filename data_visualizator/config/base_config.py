@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+
 class AllParamNames(StrEnum):
     alpha = "alpha"
     random_state = "random_state"

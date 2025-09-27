@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 from .config import AllParamNames, SupportedModels, ModelsSupportedParams
 
+
 def get_params_for_model(model: SupportedModels) -> set:
     """Возвращает множество поддерживаемых параметров для указанной модели."""
 
@@ -11,17 +12,18 @@ def get_params_for_model(model: SupportedModels) -> set:
     model_name = model.name
     return ModelsSupportedParams[model_name].value
 
+
 def read_data_file(file_path: str):
-    '''проверяет тип файла и открывает его
-     так же обрабатывает отсутстве файла по данному пути 
-     и вариацию поддерживаемого фала для pandas  '''
+    """проверяет тип файла и открывает его
+    так же обрабатывает отсутстве файла по данному пути
+    и вариацию поддерживаемого фала для pandas"""
     path = Path(file_path)
 
     if not path.exists():
         raise FileNotFoundError(f"Файл не найден: {path.absolute()}")
 
     suffix = path.suffix.lower()
-    
+
     if suffix == ".csv":
         return pd.read_csv(path)
     elif suffix in [".xls", ".xlsx"]:

@@ -61,6 +61,6 @@ class ModelParams:
         """Устанавливает значение параметра."""
         if not hasattr(self, param):
             raise ValueError(f"Unknown parameter '{param}' for ModelParams")
-        
+
         if not isassignable(value, self.__annotations__[param]):
             raise TypeError
